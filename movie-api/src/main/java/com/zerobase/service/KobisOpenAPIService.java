@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class KobisOpenAPIService {
     private final MovieRepository movieRepository;
-    private final String apiUrl = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/";
-    private final String KEY = "17f0b64b0e42ce10c1a4d1b91017181e";
+    private final String API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/";
+    private final String KEY = System.getProperty("apiKey");
 
     public void getMoviesFromApi() {
         int totalPage = totalCnt(getMoviesString("1"));
@@ -35,7 +35,7 @@ public class KobisOpenAPIService {
     }
 
     private String getMoviesString(String page) {
-        String strUrl = apiUrl
+        String strUrl = API_URL
                 + "searchMovieList.json?key="
                 + KEY
                 + "&curPage=" + page
@@ -83,8 +83,8 @@ public class KobisOpenAPIService {
 
         JSONObject movieListResult = (JSONObject) jsonObject.get("movieListResult");
         JSONArray jsonArray = (JSONArray) movieListResult.get("movieList");
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JSONObject object = (JSONObject) jsonArray.get(i);
+        for (Object value : jsonArray) {
+            JSONObject object = (JSONObject) value;
             if (movieRepository.findByMovieCd((String) object.get("movieCd")).isPresent()) {
                 continue;
             }
