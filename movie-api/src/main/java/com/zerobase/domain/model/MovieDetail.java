@@ -1,8 +1,8 @@
 package com.zerobase.domain.model;
 
+import com.zerobase.domain.MovieDetailDto;
+import jakarta.persistence.*;
 import lombok.*;
-
-import javax.persistence.*;
 
 @Getter
 @Setter
@@ -13,20 +13,21 @@ import javax.persistence.*;
 public class MovieDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
+    @Column(unique = true)
     private String movieCd;
-    private String movieNm;
-    private String movieNmEn;
-    private String movieNmOg;
+    private String movieName;
+    private String movieNameEn;
+    private String movieNameOg;
     private String prdtYear;
     private String showTm;
     private String openDt;
-    private String typeNm;
+    private String typeName;
     private String nations;
-    private String genreNm;
+    private String genreName;
     private String directors;
     private String actors;
-    private String audits;
+    private String watchGradeName;
     private String companys;
 }

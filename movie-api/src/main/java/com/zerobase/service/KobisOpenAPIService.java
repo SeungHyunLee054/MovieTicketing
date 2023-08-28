@@ -1,148 +1,111 @@
 package com.zerobase.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zerobase.domain.model.Movie;
-import com.zerobase.domain.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KobisOpenAPIService {
-    private final MovieRepository movieRepository;
-    private final String API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/";
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final String API_BASE_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/";
+    private final String API_MOVIES_URL = "searchMovieList.json?key=";
+    private final String API_MOVIE_DETAIL_URL = "searchMovieInfo.json?key=";
     private final String KEY = System.getProperty("apiKey");
 
-    public void getMoviesFromApi() {
-        int totalPage = totalCnt(getMoviesString("1"));
-        int pageEnd = totalPage / 100;
-        String curPage;
-        for (int i = 1; i <= pageEnd + 1; i++) {
-            curPage = String.valueOf(i);
-            String moviesString = getMoviesString(curPage);
-            movieRepository.saveAll(parseMovie(moviesString));
-        }
-    }
-
-    private String getMoviesString(String page) {
-        String strUrl = API_URL
-                + "searchMovieList.json?key="
+    public JSONObject getMovies(String page) {
+        String strUrl = API_BASE_URL
+                + API_MOVIES_URL
                 + KEY
                 + "&curPage=" + page
                 + "&itemPerPage=100";
 
-        try {
-            URL url = new URL(strUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            BufferedReader br;
-
-            if (responseCode == 200) {
-                br = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream())
-                );
-            } else {
-                br = new BufferedReader(
-                        new InputStreamReader(connection.getErrorStream())
-                );
-            }
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = br.readLine()) != null) {
-                response.append(inputLine);
-            }
-            br.close();
-
-            return response.toString();
-        } catch (Exception e) {
-            return "failed to get Movie data";
-        }
+        return restTemplate.getForEntity(strUrl, JSONObject.class).getBody();
     }
 
-    private List<Movie> parseMovie(String jsonStr) {
+    public JSONObject getMovieDetail(String movieCd) {
+        String strUrl = API_BASE_URL
+                + API_MOVIE_DETAIL_URL
+                + KEY
+                + "&movieCd=" + movieCd;
+
+        return restTemplate.getForEntity(strUrl, JSONObject.class).getBody();
+    }
+
+    public List<Movie> parseMovies(JSONObject jsonObject) {
         List<Movie> movies = new ArrayList<>();
-        JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject;
+        JSONObject movieListResult = mapper.convertValue(jsonObject.get("movieListResult"), JSONObject.class);
+        JSONArray movieList = mapper.convertValue(movieListResult.get("movieList"), JSONArray.class);
+        for (Object value : movieList) {
+            JSONObject object = mapper.convertValue(value, JSONObject.class);
+            JSONArray directors = mapper.convertValue(object.get("directors"), JSONArray.class);
+            String director = jsonArrayToStringDirectorsAndActors(new StringBuilder(), directors);
 
-        try {
-            jsonObject = (JSONObject) jsonParser.parse(jsonStr);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+            JSONArray companys = mapper.convertValue(object.get("companys"), JSONArray.class);
+            String company = jsonArrayToStringCompanys(new StringBuilder(), companys);
 
-        JSONObject movieListResult = (JSONObject) jsonObject.get("movieListResult");
-        JSONArray jsonArray = (JSONArray) movieListResult.get("movieList");
-        for (Object value : jsonArray) {
-            JSONObject object = (JSONObject) value;
-            if (movieRepository.findByMovieCd((String) object.get("movieCd")).isPresent()) {
-                continue;
-            }
-            JSONArray directors = (JSONArray) object.get("directors");
-            StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < directors.size(); j++) {
-                if (j >= 3) {
-                    break;
-                }
-                JSONObject o = (JSONObject) directors.get(j);
-                if (j == directors.size() - 1 || j == 2) {
-                    sb.append(o.get("peopleNm"));
-                } else {
-                    sb.append(o.get("peopleNm")).append(", ");
-                }
-            }
-            String director = sb.length() == 0 ? "감독명 없음" : sb.toString();
-            JSONArray companys = (JSONArray) object.get("companys");
-            sb = new StringBuilder();
-            for (int j = 0; j < companys.size(); j++) {
-                if (j >= 3) {
-                    break;
-                }
-                JSONObject o = (JSONObject) companys.get(j);
-                if (j == companys.size() - 1 || j == 2) {
-                    sb.append(o.get("companyNm"));
-                } else {
-                    sb.append(o.get("companyNm")).append(", ");
-                }
-            }
-            String company = sb.length() == 0 ? "회사명 없음" : sb.toString();
             movies.add(Movie.builder()
                     .movieCd((String) object.get("movieCd"))
-                    .movieNm((String) object.get("movieNm"))
-                    .movieNmEn((String) object.get("movieNmEn"))
+                    .movieName((String) object.get("movieNm"))
+                    .movieNameEn((String) object.get("movieNmEn"))
                     .prdtYear((String) object.get("prdtYear"))
                     .openDt((String) object.get("openDt"))
-                    .typeNm((String) object.get("typeNm"))
+                    .typeName((String) object.get("typeNm"))
                     .prdtStatNm((String) object.get("prdtStatNm"))
                     .nationAlt((String) object.get("nationAlt"))
                     .genreAlt((String) object.get("genreAlt"))
-                    .directorNm(director)
-                    .companyNm(company)
+                    .directorName(director)
+                    .companyName(company)
                     .build());
         }
         return movies;
     }
 
-    private int totalCnt(String jsonStr) {
-        JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject;
+    public int totalCnt(JSONObject jsonObject) {
+        return (int) mapper.convertValue(jsonObject.get("movieListResult"), JSONObject.class).get("totCnt");
+    }
 
-        try {
-            jsonObject = (JSONObject) jsonParser.parse(jsonStr);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+    private String jsonArrayToStringDirectorsAndActors(StringBuilder sb, JSONArray jsonArray) {
+        for (int i = 0; i < jsonArray.size(); i++) {
+            if (i >= 3) {
+                break;
+            }
+            JSONObject o = mapper.convertValue(jsonArray.get(i), JSONObject.class);
+            if (i == jsonArray.size() - 1) {
+                sb.append(o.get("peopleNm"));
+            } else if (i == 2) {
+                sb.append(o.get("peopleNm")).append(", 이하 생략");
+            } else {
+                sb.append(o.get("peopleNm")).append(", ");
+            }
         }
-        JSONObject movieResult = (JSONObject) jsonObject.get("movieListResult");
-        return Integer.parseInt(String.valueOf(movieResult.get("totCnt")));
+        return sb.isEmpty() ? "정보 없음" : sb.toString();
+    }
+
+    private String jsonArrayToStringCompanys(StringBuilder sb, JSONArray jsonArray) {
+        for (int i = 0; i < jsonArray.size(); i++) {
+            if (i >= 3) {
+                break;
+            }
+            JSONObject o = mapper.convertValue(jsonArray.get(i), JSONObject.class);
+            if (i == jsonArray.size() - 1) {
+                sb.append(o.get("companyNm"));
+            } else if (i == 2) {
+                sb.append(o.get("companyNm")).append(", 이하 생략");
+            } else {
+                sb.append(o.get("companyNm")).append(", ");
+            }
+        }
+        return sb.isEmpty() ? "정보 없음" : sb.toString();
     }
 }

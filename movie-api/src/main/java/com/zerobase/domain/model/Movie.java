@@ -1,8 +1,8 @@
 package com.zerobase.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.*;
-
-import javax.persistence.*;
 
 @Entity
 @Getter
@@ -13,14 +13,14 @@ import javax.persistence.*;
 public class Movie extends BaseEntity {
     @Column(unique = true)
     private String movieCd;
-    private String movieNm;
-    private String movieNmEn;
+    private String movieName;
+    private String movieNameEn;
     private String prdtYear;
     private String openDt;
-    private String typeNm;
+    private String typeName;
     private String prdtStatNm;
     private String nationAlt;
     private String genreAlt;
-    private String directorNm;
-    private String companyNm;
+    private String directorName;
+    private String companyName;
 }
