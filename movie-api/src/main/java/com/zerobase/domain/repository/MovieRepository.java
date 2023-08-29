@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByMovieCd(String movieCd);
+
+    List<Movie> findAllByOpenDtBetween(LocalDate nowMinusMonth, LocalDate now);
 }

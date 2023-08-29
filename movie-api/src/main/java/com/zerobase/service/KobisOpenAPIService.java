@@ -1,15 +1,19 @@
 package com.zerobase.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zerobase.domain.MovieDetailDto;
 import com.zerobase.domain.model.Movie;
+import com.zerobase.exception.CustomException;
+import com.zerobase.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,89 +27,76 @@ public class KobisOpenAPIService {
     private final String API_MOVIE_DETAIL_URL = "searchMovieInfo.json?key=";
     private final String KEY = System.getProperty("apiKey");
 
-    public JSONObject getMovies(String page) {
+    private JsonNode getMovieJson(String page) {
         String strUrl = API_BASE_URL
                 + API_MOVIES_URL
                 + KEY
                 + "&curPage=" + page
                 + "&itemPerPage=100";
 
-        return restTemplate.getForEntity(strUrl, JSONObject.class).getBody();
+        JsonNode root = getResponse(strUrl);
+
+        return root.get("movieListResult");
     }
 
-    public JSONObject getMovieDetail(String movieCd) {
+    public List<Movie> getMovieList(String page) {
+        JsonNode movieList = getMovieJson(page).get("movieList");
+
+        try {
+            return mapper.readValue(movieList.toString(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.error("Json 정보를 가져오지 못했습니다.");
+        }
+
+        return null;
+    }
+
+    public MovieDetailDto getMovieDetail(String movieCd) {
         String strUrl = API_BASE_URL
                 + API_MOVIE_DETAIL_URL
                 + KEY
                 + "&movieCd=" + movieCd;
 
-        return restTemplate.getForEntity(strUrl, JSONObject.class).getBody();
-    }
+        JsonNode root = getResponse(strUrl);
 
-    public List<Movie> parseMovies(JSONObject jsonObject) {
-        List<Movie> movies = new ArrayList<>();
-        JSONObject movieListResult = mapper.convertValue(jsonObject.get("movieListResult"), JSONObject.class);
-        JSONArray movieList = mapper.convertValue(movieListResult.get("movieList"), JSONArray.class);
-        for (Object value : movieList) {
-            JSONObject object = mapper.convertValue(value, JSONObject.class);
-            JSONArray directors = mapper.convertValue(object.get("directors"), JSONArray.class);
-            String director = jsonArrayToStringDirectorsAndActors(new StringBuilder(), directors);
+        JsonNode movieInfoResult = root.get("movieInfoResult");
+        JsonNode movieInfo = movieInfoResult.get("movieInfo");
 
-            JSONArray companys = mapper.convertValue(object.get("companys"), JSONArray.class);
-            String company = jsonArrayToStringCompanys(new StringBuilder(), companys);
-
-            movies.add(Movie.builder()
-                    .movieCd((String) object.get("movieCd"))
-                    .movieName((String) object.get("movieNm"))
-                    .movieNameEn((String) object.get("movieNmEn"))
-                    .prdtYear((String) object.get("prdtYear"))
-                    .openDt((String) object.get("openDt"))
-                    .typeName((String) object.get("typeNm"))
-                    .prdtStatNm((String) object.get("prdtStatNm"))
-                    .nationAlt((String) object.get("nationAlt"))
-                    .genreAlt((String) object.get("genreAlt"))
-                    .directorName(director)
-                    .companyName(company)
-                    .build());
+        try {
+            return mapper.readValue(movieInfo.toString(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.error("Json 정보를 가져오지 못했습니다.");
         }
-        return movies;
+
+        return null;
     }
 
-    public int totalCnt(JSONObject jsonObject) {
-        return (int) mapper.convertValue(jsonObject.get("movieListResult"), JSONObject.class).get("totCnt");
-    }
-
-    private String jsonArrayToStringDirectorsAndActors(StringBuilder sb, JSONArray jsonArray) {
-        for (int i = 0; i < jsonArray.size(); i++) {
-            if (i >= 3) {
-                break;
-            }
-            JSONObject o = mapper.convertValue(jsonArray.get(i), JSONObject.class);
-            if (i == jsonArray.size() - 1) {
-                sb.append(o.get("peopleNm"));
-            } else if (i == 2) {
-                sb.append(o.get("peopleNm")).append(", 이하 생략");
-            } else {
-                sb.append(o.get("peopleNm")).append(", ");
-            }
+    private JsonNode getResponse(String strUrl) {
+        ResponseEntity<String> response = restTemplate.getForEntity(strUrl, String.class);
+        JsonNode root = null;
+        try {
+            root = mapper.readTree(response.getBody());
+        } catch (JsonProcessingException e) {
+            log.error("Json 정보를 가져오지 못했습니다.");
         }
-        return sb.isEmpty() ? "정보 없음" : sb.toString();
+
+        if (root == null) {
+            throw new CustomException(ErrorCode.WRONG_URL);
+        }
+
+        return root;
     }
 
-    private String jsonArrayToStringCompanys(StringBuilder sb, JSONArray jsonArray) {
-        for (int i = 0; i < jsonArray.size(); i++) {
-            if (i >= 3) {
-                break;
-            }
-            JSONObject o = mapper.convertValue(jsonArray.get(i), JSONObject.class);
-            if (i == jsonArray.size() - 1) {
-                sb.append(o.get("companyNm"));
-            } else if (i == 2) {
-                sb.append(o.get("companyNm")).append(", 이하 생략");
-            } else {
-                sb.append(o.get("companyNm")).append(", ");
-            }
+    public int totalCnt() {
+        JsonNode totCnt = getMovieJson("1").get("totCnt");
+        try {
+            return mapper.readValue(totCnt.toString(), Integer.class);
+        } catch (JsonProcessingException e) {
+            log.error("Json 정보를 가져오지 못했습니다.");
         }
-        return sb.isEmpty() ? "정보 없음" : sb.toString();
+
+        return -1;
     }
 }
