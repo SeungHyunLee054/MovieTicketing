@@ -23,7 +23,7 @@ public class MovieService {
     private final OpenMovieRepository openMovieRepository;
 
     public void saveMovie() {
-        int totalPage = kobisOpenAPIService.totalCnt(kobisOpenAPIService.getMovieJson("1"));
+        int totalPage = kobisOpenAPIService.totalCnt();
         int pageEnd = totalPage / 100;
         for (int i = 1; i <= pageEnd + 1; i++) {
             String curPage = String.valueOf(i);
@@ -48,8 +48,7 @@ public class MovieService {
         MovieDetailDto movieDetailDto = redisClient.get(movieCd, MovieDetailDto.class);
         if (movieDetailDto == null) {
             log.info("redis에 저장되지 않은 영화입니다.");
-//            movieDetailDto = kobisOpenAPIService
-//                    .parseMovie(kobisOpenAPIService.getMovieDetail(movieCd));
+            movieDetailDto = kobisOpenAPIService.getMovieDetail(movieCd);
 
             if (openMovieRepository.findByMovieCd(movieCd).isPresent()) {
                 log.info("상영중인 영화이므로 redis에 저장");
