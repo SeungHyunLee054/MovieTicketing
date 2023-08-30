@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zerobase.domain.MovieDetailDto;
 import com.zerobase.domain.model.Movie;
+import com.zerobase.domain.response.MovieDto;
+import com.zerobase.domain.response.MovieListResult;
+import com.zerobase.domain.response.Root;
 import com.zerobase.exception.CustomException;
 import com.zerobase.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -27,29 +30,20 @@ public class KobisOpenAPIService {
     private final String API_MOVIE_DETAIL_URL = "searchMovieInfo.json?key=";
     private final String KEY = System.getProperty("apiKey");
 
-    private JsonNode getMovieJson(String page) {
+    private MovieListResult getMovies(String page) {
         String strUrl = API_BASE_URL
                 + API_MOVIES_URL
                 + KEY
                 + "&curPage=" + page
                 + "&itemPerPage=100";
 
-        JsonNode root = getResponse(strUrl);
-
-        return root.get("movieListResult");
+        return restTemplate.getForObject(strUrl, Root.class).getMovieListResult();
     }
 
     public List<Movie> getMovieList(String page) {
-        JsonNode movieList = getMovieJson(page).get("movieList");
-
-        try {
-            return mapper.readValue(movieList.toString(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.error("Json 정보를 가져오지 못했습니다.");
-        }
-
-        return null;
+        return getMovies(page).getMovieList().stream()
+                .map(MovieDto::from)
+                .toList();
     }
 
     public MovieDetailDto getMovieDetail(String movieCd) {
@@ -90,13 +84,6 @@ public class KobisOpenAPIService {
     }
 
     public int totalCnt() {
-        JsonNode totCnt = getMovieJson("1").get("totCnt");
-        try {
-            return mapper.readValue(totCnt.toString(), Integer.class);
-        } catch (JsonProcessingException e) {
-            log.error("Json 정보를 가져오지 못했습니다.");
-        }
-
-        return -1;
+        return Integer.parseInt(getMovies("1").getTotCnt());
     }
 }
