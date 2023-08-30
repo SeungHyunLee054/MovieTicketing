@@ -1,4 +1,4 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response.movie.detail;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class ActorDto {
+public class StaffDto {
     private String peopleNm;
     private String peopleNmEn;
-    private String cast;
-    private String castEn;
+    private String staffRoleNm;
 }

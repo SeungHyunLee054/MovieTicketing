@@ -1,4 +1,4 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response.movie.detail;
 
 import lombok.*;
 

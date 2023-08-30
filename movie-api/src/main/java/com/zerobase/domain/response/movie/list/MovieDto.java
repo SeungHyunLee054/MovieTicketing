@@ -1,7 +1,5 @@
-package com.zerobase.domain.response;
+package com.zerobase.domain.response.movie.list;
 
-import com.zerobase.domain.CompanyDto;
-import com.zerobase.domain.DirectorDto;
 import com.zerobase.domain.model.Movie;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,13 +1,12 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response.movie.detail;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-public class AuditDto {
-    private String auditNo;
-    private String watchGradeNm;
+public class NationDto {
+    private String nationNm;
 }

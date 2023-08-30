@@ -1,13 +1,12 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response.movie.detail;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-public class ShowTypeDto {
-    private String showTypeGroupNm;
-    private String showTypeNm;
+public class RootDetail {
+    private MovieInfoResult movieInfoResult;
 }

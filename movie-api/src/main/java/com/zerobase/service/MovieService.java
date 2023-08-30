@@ -1,7 +1,7 @@
 package com.zerobase.service;
 
 import com.zerobase.client.RedisClient;
-import com.zerobase.domain.MovieDetailDto;
+import com.zerobase.domain.response.movie.detail.MovieDetailDto;
 import com.zerobase.domain.model.Movie;
 import com.zerobase.domain.model.OpenMovie;
 import com.zerobase.domain.repository.MovieRepository;
@@ -42,6 +42,7 @@ public class MovieService {
                 }
             }
         }
+        log.info("총 {}개 정보 저장", totalPage);
     }
 
     public MovieDetailDto searchMovieDetail(String movieCd) {
@@ -57,7 +58,7 @@ public class MovieService {
         } else {
             log.info("redis에 저장된 영화입니다.");
         }
-
+        log.info("해당 코드에 대한 영화 제목 -> {}", movieDetailDto.getMovieNm());
         return movieDetailDto;
     }
 
@@ -79,5 +80,6 @@ public class MovieService {
                 openMovieRepository.save(openMovie);
             }
         }
+        log.info("총 {}개의 영화가 상영 중", openMovies.size());
     }
 }

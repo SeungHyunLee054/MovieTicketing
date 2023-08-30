@@ -1,6 +1,6 @@
 package com.zerobase.controller;
 
-import com.zerobase.domain.MovieDetailDto;
+import com.zerobase.domain.response.movie.detail.MovieDetailDto;
 import com.zerobase.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

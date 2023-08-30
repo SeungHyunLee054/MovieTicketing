@@ -3,7 +3,7 @@ package com.zerobase.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.zerobase.domain.MovieDetailDto;
+import com.zerobase.domain.response.movie.detail.MovieDetailDto;
 import com.zerobase.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

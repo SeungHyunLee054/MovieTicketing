@@ -1,14 +1,13 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response.movie.detail;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DirectorDto {
+public class DirectorDetailDto {
     private String peopleNm;
+    private String peopleNmEn;
 }
