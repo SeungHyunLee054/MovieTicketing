@@ -1,12 +1,13 @@
-package com.zerobase.domain;
+package com.zerobase.domain.response;
 
+import com.zerobase.domain.CompanyDto;
+import com.zerobase.domain.DirectorDto;
 import com.zerobase.domain.model.Movie;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieDto implements Serializable {
+public class MovieDto {
     private String movieCd;
     private String movieNm;
     private String movieNmEn;

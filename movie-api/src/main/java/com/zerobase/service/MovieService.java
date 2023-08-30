@@ -6,6 +6,7 @@ import com.zerobase.domain.model.Movie;
 import com.zerobase.domain.model.OpenMovie;
 import com.zerobase.domain.repository.MovieRepository;
 import com.zerobase.domain.repository.OpenMovieRepository;
+import com.zerobase.domain.response.MovieDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,23 +62,23 @@ public class MovieService {
         return movieDetailDto;
     }
 
-    public void saveOpenMovies() {
-        List<OpenMovie> openMovies = movieRepository.findAllByOpenDtBetween(
-                        LocalDate.now().minusMonths(1), LocalDate.now())
-                .stream()
-                .map(Movie::from)
-                .toList();
-
-        try {
-            openMovieRepository.saveAll(openMovies);
-        } catch (Exception e) {
-            log.info("중복 키 존재, 해당 값 제외 후 저장");
-            for (OpenMovie openMovie : openMovies) {
-                if (openMovieRepository.findByMovieCd(openMovie.getMovieCd()).isPresent()) {
-                    continue;
-                }
-                openMovieRepository.save(openMovie);
-            }
-        }
-    }
+//    public void saveOpenMovies() {
+//        List<OpenMovie> openMovies = movieRepository.findAllByOpenDtBetween(
+//                        LocalDate.now().minusMonths(1), LocalDate.now())
+//                .stream()
+//                .map(Movie::from)
+//                .toList();
+//
+//        try {
+//            openMovieRepository.saveAll(openMovies);
+//        } catch (Exception e) {
+//            log.info("중복 키 존재, 해당 값 제외 후 저장");
+//            for (OpenMovie openMovie : openMovies) {
+//                if (openMovieRepository.findByMovieCd(openMovie.getMovieCd()).isPresent()) {
+//                    continue;
+//                }
+//                openMovieRepository.save(openMovie);
+//            }
+//        }
+//    }
 }
