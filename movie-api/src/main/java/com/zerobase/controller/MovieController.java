@@ -14,7 +14,7 @@ public class MovieController {
 
     @PostMapping("/get")
     public ResponseEntity<String> getMovies() {
-        movieService.saveMovie();
+        movieService.saveMovies();
         return ResponseEntity.ok("영화 데이터 저장 성공");
     }
 
