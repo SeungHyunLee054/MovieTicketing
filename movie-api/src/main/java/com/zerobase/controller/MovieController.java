@@ -28,4 +28,10 @@ public class MovieController {
         movieService.saveOpenMovies();
         return ResponseEntity.ok("상영중 영화 데이터 저장 성공");
     }
+
+    @PostMapping("/delete")
+    public ResponseEntity<String> d(){
+        movieService.deleteMovie();
+        return ResponseEntity.ok("ok");
+    }
 }
