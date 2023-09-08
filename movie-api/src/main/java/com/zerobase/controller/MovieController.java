@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class MovieController {
     private final MovieService movieService;
 
-    @PostMapping("/save")
+    @PostMapping
     public ResponseEntity<String> getMovies() {
         movieService.saveMovies();
         return ResponseEntity.ok("영화 데이터 저장 성공");
