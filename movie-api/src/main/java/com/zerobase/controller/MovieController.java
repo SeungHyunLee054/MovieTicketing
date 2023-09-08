@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 public class MovieController {
     private final MovieService movieService;
 
-    @PostMapping("/get")
+    @PostMapping
     public ResponseEntity<String> getMovies() {
         movieService.saveMovies();
         return ResponseEntity.ok("영화 데이터 저장 성공");
     }
 
-    @GetMapping("/search/detail")
+    @GetMapping("/detail")
     public ResponseEntity<MovieDetailDto> searchMovieDetail(@RequestParam String movieCd) {
         return ResponseEntity.ok(movieService.searchMovieDetail(movieCd));
     }
@@ -27,5 +27,11 @@ public class MovieController {
     public ResponseEntity<String> saveOpenMovies() {
         movieService.saveOpenMovies();
         return ResponseEntity.ok("상영중 영화 데이터 저장 성공");
+    }
+
+    @DeleteMapping("/open")
+    public ResponseEntity<String> deletePastOpenMovie() {
+        movieService.deletePastOpenMovies();
+        return ResponseEntity.ok("상영 종료 영화 데이터 삭제 성공");
     }
 }
