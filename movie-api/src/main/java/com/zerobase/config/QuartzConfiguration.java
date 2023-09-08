@@ -3,14 +3,14 @@ package com.zerobase.config;
 import com.zerobase.job.MonthlyJob;
 import com.zerobase.job.WeeklyJob;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.quartz.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class QuartzConfiguration {
-    @Autowired
-    Scheduler scheduler;
+    private final Scheduler scheduler;
 
     @PostConstruct
     public void start() throws SchedulerException {

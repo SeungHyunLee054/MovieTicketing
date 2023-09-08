@@ -50,13 +50,21 @@ public class QuartzService {
         try {
             openMovieRepository.saveAll(openMovies);
         } catch (Exception e) {
-//            for (OpenMovie openMovie : openMovies) {
-//                log.info("수정");
-//                if (openMovieRepository.findByMovieCd(openMovie.getMovieCd()).isPresent()) {
-//                    openMovieRepository.deleteByMovieCd(openMovie.getMovieCd());
-//                }
-//                openMovieRepository.save(openMovie);
-//            }
+            log.info("중복키 존재, 해당 값 수정");
+            for (OpenMovie openMovie : openMovies) {
+                OpenMovie movie = openMovieRepository.findByMovieCd(openMovie.getMovieCd())
+                        .orElse(openMovie);
+                movie.setMovieName(openMovie.getMovieName());
+                movie.setMovieNameEn(openMovie.getMovieNameEn());
+                movie.setPrdtYear(openMovie.getPrdtYear());
+                movie.setOpenDt(openMovie.getOpenDt());
+                movie.setTypeName(openMovie.getPrdtStatName());
+                movie.setNationAlt(openMovie.getNationAlt());
+                movie.setGenreAlt(openMovie.getGenreAlt());
+                movie.setDirectorName(openMovie.getDirectorName());
+                movie.setCompanyName(openMovie.getCompanyName());
+                openMovieRepository.save(movie);
+            }
         }
         log.info("총 {}개의 영화가 상영 중", openMovies.size());
     }

@@ -8,6 +8,7 @@ import com.zerobase.domain.repository.OpenMovieRepository;
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -89,5 +90,22 @@ public class MovieService {
             }
         }
         log.info("총 {}개의 영화가 상영 중", openMovies.size());
+    }
+
+    public void deletePastOpenMovies() {
+        List<OpenMovie> pastOpenMovies = openMovieRepository.findAllByOpenDtBefore(LocalDate.now().minusMonths(1));
+        if (!pastOpenMovies.isEmpty()) {
+            for (OpenMovie o : pastOpenMovies) {
+                if (!ObjectUtils.isEmpty(redisClient.get(o.getMovieCd(), MovieDetailDto.class))) {
+                    redisClient.delete(o.getMovieCd());
+                    log.info("redis 서버에 해당 영화의 상세정보가 존재하므로 삭제하였습니다. 해당 영화 제목 -> {}", o.getMovieName());
+                }
+                openMovieRepository.deleteByMovieCd(o.getMovieCd());
+            }
+            log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
+
+        } else {
+            log.info("상영 종료된 영화가 없습니다.");
+        }
     }
 }
