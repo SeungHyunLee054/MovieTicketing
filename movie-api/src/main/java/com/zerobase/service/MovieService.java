@@ -35,10 +35,19 @@ public class MovieService {
                 movieRepository.saveAll(movies);
             } catch (Exception e) {
                 log.info("중복 키 존재, 해당 값 제외 후 저장");
-                for (Movie movie : movies) {
-                    if (movieRepository.findByMovieCd(movie.getMovieCd()).isPresent()) {
-                        continue;
-                    }
+                for (Movie m : movies) {
+                    Movie movie = movieRepository.findByMovieCd(m.getMovieCd())
+                            .orElse(m);
+                    movie.setMovieName(m.getMovieName());
+                    movie.setMovieNameEn(m.getMovieNameEn());
+                    movie.setPrdtYear(m.getPrdtYear());
+                    movie.setOpenDt(m.getOpenDt());
+                    movie.setTypeName(m.getPrdtStatName());
+                    movie.setNationAlt(m.getNationAlt());
+                    movie.setGenreAlt(m.getGenreAlt());
+                    movie.setDirectorName(m.getDirectorName());
+                    movie.setCompanyName(m.getCompanyName());
+
                     movieRepository.save(movie);
                 }
             }
@@ -93,19 +102,22 @@ public class MovieService {
     }
 
     public void deletePastOpenMovies() {
-        List<OpenMovie> pastOpenMovies = openMovieRepository.findAllByOpenDtBefore(LocalDate.now().minusMonths(1));
-        if (!pastOpenMovies.isEmpty()) {
-            for (OpenMovie o : pastOpenMovies) {
-                if (!ObjectUtils.isEmpty(redisClient.get(o.getMovieCd(), MovieDetailDto.class))) {
-                    redisClient.delete(o.getMovieCd());
-                    log.info("redis 서버에 해당 영화의 상세정보가 존재하므로 삭제하였습니다. 해당 영화 제목 -> {}", o.getMovieName());
-                }
-                openMovieRepository.deleteByMovieCd(o.getMovieCd());
-            }
-            log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
-
-        } else {
+        List<OpenMovie> pastOpenMovies =
+                openMovieRepository.findAllByOpenDtBefore(LocalDate.now()
+                        .minusMonths(1));
+        if (pastOpenMovies.isEmpty()) {
             log.info("상영 종료된 영화가 없습니다.");
+            return;
         }
+
+        for (OpenMovie o : pastOpenMovies) {
+            if (!ObjectUtils.isEmpty(redisClient.get(o.getMovieCd(), MovieDetailDto.class))) {
+                redisClient.delete(o.getMovieCd());
+                log.info("redis 서버에 해당 영화의 상세정보가 존재하므로 삭제하였습니다. 해당 영화 제목 -> {}", o.getMovieName());
+            }
+        }
+        openMovieRepository.deleteAllByOpenDtBefore(LocalDate.now()
+                .minusMonths(1));
+        log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
     }
 }

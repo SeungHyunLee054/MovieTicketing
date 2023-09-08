@@ -1,6 +1,6 @@
 package com.zerobase.job;
 
-import com.zerobase.service.QuartzService;
+import com.zerobase.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -8,11 +8,11 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 @RequiredArgsConstructor
 public class WeeklyJob extends QuartzJobBean {
-    private final QuartzService quartzService;
+    private final MovieService movieService;
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        quartzService.deletePastOpenMovies();
-        quartzService.saveOpenMovies();
+        movieService.deletePastOpenMovies();
+        movieService.saveOpenMovies();
     }
 }
