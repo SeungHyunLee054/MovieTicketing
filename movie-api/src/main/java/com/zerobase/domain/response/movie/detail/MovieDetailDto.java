@@ -20,7 +20,7 @@ public class MovieDetailDto {
     private String prdtStatNm;
     private String typeNm;
     private List<NationDto> nations;
-    private List<?> genres;
+    private List<GenreDto> genres;
     private List<DirectorDetailDto> directors;
     private List<ActorDto> actors;
     private List<ShowTypeDto> showTypes;
