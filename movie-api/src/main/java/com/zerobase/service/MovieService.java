@@ -1,12 +1,11 @@
 package com.zerobase.service;
 
 import com.zerobase.client.RedisClient;
-import com.zerobase.domain.MovieDetailDto;
 import com.zerobase.domain.model.Movie;
 import com.zerobase.domain.model.OpenMovie;
 import com.zerobase.domain.repository.MovieRepository;
 import com.zerobase.domain.repository.OpenMovieRepository;
-import com.zerobase.domain.response.MovieDto;
+import com.zerobase.domain.response.movie.detail.MovieDetailDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ public class MovieService {
     private final RedisClient redisClient;
     private final OpenMovieRepository openMovieRepository;
 
-    public void saveMovie() {
+    public void saveMovies() {
         int totalPage = kobisOpenAPIService.totalCnt();
         int pageEnd = totalPage / 100;
         for (int i = 1; i <= pageEnd + 1; i++) {
@@ -43,6 +42,7 @@ public class MovieService {
                 }
             }
         }
+        log.info("총 {}개 정보 저장", totalPage);
     }
 
     public MovieDetailDto searchMovieDetail(String movieCd) {
@@ -58,27 +58,36 @@ public class MovieService {
         } else {
             log.info("redis에 저장된 영화입니다.");
         }
-
+        log.info("해당 코드에 대한 영화 제목 -> {}", movieDetailDto.getMovieNm());
         return movieDetailDto;
     }
 
-//    public void saveOpenMovies() {
-//        List<OpenMovie> openMovies = movieRepository.findAllByOpenDtBetween(
-//                        LocalDate.now().minusMonths(1), LocalDate.now())
-//                .stream()
-//                .map(Movie::from)
-//                .toList();
-//
-//        try {
-//            openMovieRepository.saveAll(openMovies);
-//        } catch (Exception e) {
-//            log.info("중복 키 존재, 해당 값 제외 후 저장");
-//            for (OpenMovie openMovie : openMovies) {
-//                if (openMovieRepository.findByMovieCd(openMovie.getMovieCd()).isPresent()) {
-//                    continue;
-//                }
-//                openMovieRepository.save(openMovie);
-//            }
-//        }
-//    }
+    public void saveOpenMovies() {
+        List<OpenMovie> openMovies = movieRepository.findAllByOpenDtBetween(
+                        LocalDate.now().minusMonths(1), LocalDate.now())
+                .stream()
+                .map(Movie::from)
+                .toList();
+
+        try {
+            openMovieRepository.saveAll(openMovies);
+        } catch (Exception e) {
+            log.info("중복키 존재, 해당 값 수정");
+            for (OpenMovie openMovie : openMovies) {
+                OpenMovie movie = openMovieRepository.findByMovieCd(openMovie.getMovieCd())
+                        .orElse(openMovie);
+                movie.setMovieName(openMovie.getMovieName());
+                movie.setMovieNameEn(openMovie.getMovieNameEn());
+                movie.setPrdtYear(openMovie.getPrdtYear());
+                movie.setOpenDt(openMovie.getOpenDt());
+                movie.setTypeName(openMovie.getPrdtStatName());
+                movie.setNationAlt(openMovie.getNationAlt());
+                movie.setGenreAlt(openMovie.getGenreAlt());
+                movie.setDirectorName(openMovie.getDirectorName());
+                movie.setCompanyName(openMovie.getCompanyName());
+                openMovieRepository.save(movie);
+            }
+        }
+        log.info("총 {}개의 영화가 상영 중", openMovies.size());
+    }
 }
