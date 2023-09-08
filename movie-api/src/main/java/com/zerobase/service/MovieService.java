@@ -72,8 +72,8 @@ public class MovieService {
         try {
             openMovieRepository.saveAll(openMovies);
         } catch (Exception e) {
+            log.info("중복키 존재, 해당 값 수정");
             for (OpenMovie openMovie : openMovies) {
-                log.info("중복키 존재, 해당 값 수정");
                 OpenMovie movie = openMovieRepository.findByMovieCd(openMovie.getMovieCd())
                         .orElse(openMovie);
                 movie.setMovieName(openMovie.getMovieName());
