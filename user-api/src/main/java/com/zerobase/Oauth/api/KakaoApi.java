@@ -65,8 +65,6 @@ public class KakaoApi implements OauthApi {
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
 
-        KakaoUserInfoResponse userInfoResponse =
-                restTemplate.postForObject(url, request, KakaoUserInfoResponse.class);
-        return userInfoResponse;
+        return restTemplate.postForObject(url, request, KakaoUserInfoResponse.class);
     }
 }

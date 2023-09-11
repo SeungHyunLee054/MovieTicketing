@@ -14,8 +14,6 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final TokenProvider tokenProvider;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -38,17 +36,15 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> {
-            web.ignoring()
-                    .requestMatchers(
-                            "/images/**",
-                            "/js/**",
-                            "/css/**",
-                            "/swagger-ui/**",
-                            "/swagger-resources/**",
-                            "/v2/**",
-                            "/v3/**"
-                    );
-        };
+        return web -> web.ignoring()
+                .requestMatchers(
+                        "/images/**",
+                        "/js/**",
+                        "/css/**",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v2/**",
+                        "/v3/**"
+                );
     }
 }
