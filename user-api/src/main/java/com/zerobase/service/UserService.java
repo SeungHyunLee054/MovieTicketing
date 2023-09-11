@@ -3,12 +3,20 @@ package com.zerobase.service;
 import com.zerobase.config.TokenProvider;
 import com.zerobase.domain.SignInForm;
 import com.zerobase.domain.SignUpForm;
-import com.zerobase.domain.UserDto;
 import com.zerobase.domain.model.User;
 import com.zerobase.domain.repository.UserRepository;
+import com.zerobase.domain.type.OAuthProvider;
+import com.zerobase.exception.CustomException;
+import com.zerobase.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.zerobase.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -16,10 +24,18 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final TokenProvider provider;
+    private final PasswordEncoder passwordEncoder;
 
     public void userSignUp(SignUpForm form) {
-        User user = userRepository.findByEmail(form.getEmail())
-                .orElseThrow();
+        if (userRepository.findByEmail(form.getEmail()).isPresent()) {
+            throw new CustomException(ALREADY_EXIST_USER);
+        }
+
+        User user = User.from(form);
+        user.setBlocked(false);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setOAuthProvider(OAuthProvider.DOMAIN);
+        user.setBalance(0L);
 
         userRepository.save(user);
         log.info("회원 가입 성공");
@@ -27,11 +43,15 @@ public class UserService {
 
     public void userAdminSignUp(SignUpForm form) {
         if (userRepository.findByEmail(form.getEmail()).isPresent()) {
-            throw new RuntimeException();
+            throw new CustomException(ALREADY_EXIST_USER);
         }
 
         User user = User.from(form);
         user.setAdminYn(true);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setOAuthProvider(OAuthProvider.DOMAIN);
+        user.setBalance(0L);
+
         userRepository.save(user);
         log.info("회원 가입 성공");
     }
@@ -40,23 +60,51 @@ public class UserService {
         User user = userRepository.findByEmail(form.getEmail())
                 .stream()
                 .filter(u ->
-                        u.getPassword().equals(form.getPassword()) && !u.isAdminYn())
+                        passwordEncoder.matches(form.getPassword(), u.getPassword())
+                                && !u.isAdminYn())
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new CustomException(WRONG_ID_OR_PASSWORD));
+
+        if (user.isBlocked()) {
+            throw new CustomException(ErrorCode.BLOCKED_USER);
+        }
 
         return provider.createToken(user.getEmail(), user.getId(), false);
     }
 
     public String userAdminLoginToken(SignInForm form) {
-        User user = userRepository.findByEmailAndPasswordAndAdminYnIsTrue(form.getEmail(), form.getPassword())
-                .orElseThrow();
+        User user = userRepository.findByEmail(form.getEmail())
+                .stream()
+                .filter(u ->
+                        passwordEncoder.matches(form.getPassword(), u.getPassword())
+                                && u.isAdminYn())
+                .findFirst()
+                .orElseThrow(() -> new CustomException(WRONG_ID_OR_PASSWORD));
 
         return provider.createToken(user.getEmail(), user.getId(), true);
     }
 
-    public UserDto userInfo(String email) {
+    public void blockUser(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow();
-        return UserDto.from(user);
+                .orElseThrow(() -> new CustomException(NO_EXIST_USER));
+
+        user.setBlocked(true);
+        userRepository.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(NO_EXIST_USER));
+    }
+
+    public Optional<User> findByIdAndEmail(Long id, String email) {
+        return userRepository.findById(id)
+                .stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
     }
 }

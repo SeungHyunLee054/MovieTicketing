@@ -1,0 +1,51 @@
+package com.zerobase.service;
+
+import com.zerobase.domain.ChangeBalanceForm;
+import com.zerobase.domain.model.UserBalanceHistory;
+import com.zerobase.domain.repository.UserBalanceHistoryRepository;
+import com.zerobase.domain.repository.UserRepository;
+import com.zerobase.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.zerobase.exception.ErrorCode.NOT_ENOUGH_MONEY;
+import static com.zerobase.exception.ErrorCode.NO_EXIST_USER;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserBalanceService {
+    private final UserBalanceHistoryRepository userBalanceHistoryRepository;
+    private final UserRepository userRepository;
+
+    @Transactional(noRollbackFor = CustomException.class)
+    public UserBalanceHistory changeBalance(Long userId, ChangeBalanceForm form) {
+        UserBalanceHistory userBalanceHistory =
+                userBalanceHistoryRepository.findFirstByUser_IdOrderByIdDesc(userId)
+                        .orElse(UserBalanceHistory.builder()
+                                .changeMoney(0L)
+                                .currentMoney(0L)
+                                .user(userRepository.findById(userId)
+                                        .orElseThrow(() -> new CustomException(NO_EXIST_USER)))
+                                .build());
+
+        if (userBalanceHistory.getCurrentMoney() + form.getMoney() < 0) {
+            throw new CustomException(NOT_ENOUGH_MONEY);
+        }
+
+        userBalanceHistory = UserBalanceHistory.builder()
+                .changeMoney(form.getMoney())
+                .currentMoney(userBalanceHistory.getCurrentMoney() + form.getMoney())
+                .description(form.getMessage())
+                .fromMessage(form.getFrom())
+                .user(userBalanceHistory.getUser())
+                .build();
+
+        userBalanceHistory.getUser()
+                .setBalance(userBalanceHistory.getCurrentMoney());
+
+        return userBalanceHistoryRepository.save(userBalanceHistory);
+    }
+}

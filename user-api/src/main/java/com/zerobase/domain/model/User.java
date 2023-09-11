@@ -1,9 +1,11 @@
 package com.zerobase.domain.model;
 
 import com.zerobase.domain.SignUpForm;
+import com.zerobase.domain.type.OAuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.envers.AuditOverride;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,11 +17,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private long id;
+@AuditOverride(forClass = BaseEntity.class)
+public class User extends BaseEntity{
     @Column(unique = true, nullable = false)
     private String email;
     private String name;
@@ -34,6 +33,10 @@ public class User {
 
     @ColumnDefault("0")
     private Long balance;
+
+    private boolean blocked;
+
+    private OAuthProvider oAuthProvider;
 
     public static User from(SignUpForm form) {
         return User.builder()
