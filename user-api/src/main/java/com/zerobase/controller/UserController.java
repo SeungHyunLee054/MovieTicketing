@@ -7,8 +7,6 @@ import com.zerobase.domain.SignInForm;
 import com.zerobase.domain.SignUpForm;
 import com.zerobase.domain.UserDto;
 import com.zerobase.domain.model.User;
-import com.zerobase.exception.CustomException;
-import com.zerobase.exception.ErrorCode;
 import com.zerobase.service.UserBalanceService;
 import com.zerobase.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -59,25 +57,19 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers(@RequestHeader(name = "X-AUTH-TOKEN") String token) {
         UserVo vo = provider.getUserVo(token);
 
-        User user = userService.findByEmail(vo.getEmail());
-        if (!user.isAdminYn()) {
-            throw new CustomException(ErrorCode.NO_ADMIN_USER);
-        }
+        User admin = userService.findByEmail(vo.getEmail());
 
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers(admin));
     }
 
-    @PostMapping("/admin/blcok")
+    @PostMapping("/admin/block")
     public ResponseEntity<String> blockUser(@RequestHeader(name = "X-AUTH-TOKEN") String token,
                                             @RequestBody String email) {
         UserVo vo = provider.getUserVo(token);
 
-        User user = userService.findByEmail(vo.getEmail());
-        if (!user.isAdminYn()) {
-            throw new CustomException(ErrorCode.NO_ADMIN_USER);
-        }
+        User admin = userService.findByEmail(vo.getEmail());
 
-        userService.blockUser(email);
+        userService.blockUser(admin, email);
         return ResponseEntity.ok("해당 유저를 차단했습니다.");
     }
 

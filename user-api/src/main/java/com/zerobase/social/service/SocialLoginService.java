@@ -1,36 +1,35 @@
-package com.zerobase.Oauth.service;
+package com.zerobase.social.service;
 
-import com.zerobase.Oauth.domain.AuthToken;
-import com.zerobase.Oauth.domain.OAuthLoginParam;
-import com.zerobase.Oauth.domain.response.OAuthUserInfoResponse;
-import com.zerobase.Oauth.util.AuthTokenGenerator;
+import com.zerobase.config.TokenProvider;
 import com.zerobase.domain.model.User;
 import com.zerobase.domain.repository.UserRepository;
+import com.zerobase.social.domain.SocialLoginParam;
+import com.zerobase.social.domain.response.SocialUserInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthLoginService {
+public class SocialLoginService {
     private final UserRepository userRepository;
-    private final AuthTokenGenerator authTokenGenerator;
-    private final OAuthInfoService oAuthInfoService;
+    private final SocialInfoService socialInfoService;
+    private final TokenProvider tokenProvider;
 
-    public AuthToken login(OAuthLoginParam param) {
-        OAuthUserInfoResponse userInfoResponse =
-                oAuthInfoService.requestUserInfo(param);
+    public String login(SocialLoginParam param) {
+        SocialUserInfoResponse userInfoResponse =
+                socialInfoService.requestUserInfo(param);
         Long userId = findOrCreateUser(userInfoResponse);
 
-        return authTokenGenerator.generate(userId);
+        return tokenProvider.createToken(userInfoResponse.getEmail(), userId, false);
     }
 
-    private Long findOrCreateUser(OAuthUserInfoResponse userInfoResponse) {
+    private Long findOrCreateUser(SocialUserInfoResponse userInfoResponse) {
         return userRepository.findByEmail(userInfoResponse.getEmail())
                 .map(User::getId)
                 .orElseGet(() -> newUser(userInfoResponse));
     }
 
-    private Long newUser(OAuthUserInfoResponse userInfoResponse) {
+    private Long newUser(SocialUserInfoResponse userInfoResponse) {
         User user = User.builder()
                 .email(userInfoResponse.getEmail())
                 .name(userInfoResponse.getName())

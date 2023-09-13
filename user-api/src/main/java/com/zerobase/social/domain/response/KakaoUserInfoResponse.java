@@ -1,4 +1,4 @@
-package com.zerobase.Oauth.domain.response;
+package com.zerobase.social.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zerobase.domain.type.OAuthProvider;
@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 
 @Getter
-public class KakaoUserInfoResponse implements OAuthUserInfoResponse {
+public class KakaoUserInfoResponse implements SocialUserInfoResponse {
     @JsonProperty("kakao_account")
     private KakaoAccount kakaoAccount;
 

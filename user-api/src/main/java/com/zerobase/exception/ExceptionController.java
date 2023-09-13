@@ -1,6 +1,5 @@
 package com.zerobase.exception;
 
-import jakarta.servlet.ServletException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -18,13 +17,6 @@ public class ExceptionController {
         return ResponseEntity
                 .badRequest()
                 .body(new ExceptionResponse(e.getMessage(), e.getErrorCode()));
-    }
-
-    @ExceptionHandler(ServletException.class)
-    public ResponseEntity<ExceptionResponse> servletExceptionHandler(final ServletException e) {
-        return ResponseEntity
-                .badRequest()
-                .body(new ExceptionResponse(e.getMessage(), ErrorCode.INVALID_ACCESS));
     }
 
     @Getter

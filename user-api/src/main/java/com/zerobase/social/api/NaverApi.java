@@ -1,8 +1,8 @@
-package com.zerobase.Oauth.api;
+package com.zerobase.social.api;
 
-import com.zerobase.Oauth.domain.OAuthLoginParam;
-import com.zerobase.Oauth.domain.response.KakaoTokenResponse;
-import com.zerobase.Oauth.domain.response.KakaoUserInfoResponse;
+import com.zerobase.social.domain.SocialLoginParam;
+import com.zerobase.social.domain.response.NaverTokenResponse;
+import com.zerobase.social.domain.response.NaverUserInfoResponse;
 import com.zerobase.domain.type.OAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,57 +14,62 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-
 @Component
 @RequiredArgsConstructor
-public class KakaoApi implements OauthApi {
+public class NaverApi implements SocialApi {
     private final RestTemplate restTemplate;
-    @Value("${kakao.auth.uri}")
-    private String KAKAO_AUTH_URI;
-    @Value("${kakao.api.uri}")
-    private String KAKAO_API_URI;
-    @Value("${kakao.redirect.uri}")
+    @Value("${naver.auth.uri}")
+    private String NAVER_AUTH_URI;
+    @Value("${naver.api.uri}")
+    private String NAVER_API_URI;
+    @Value("${naver.redirect.uri}")
     private String REDIRECT_URI;
     @Value("${grant.type}")
     private String GRANT_TYPE;
-    private final String CLIENT_ID = System.getProperty("kakao_client_id");
 
+    private final String clientId = System.getProperty("naver_client_id");
+
+    private final String clientSecret = System.getProperty("naver_client_secret");
+
+    @Override
     public OAuthProvider oAuthProvider() {
-        return OAuthProvider.KAKAO;
+        return OAuthProvider.NAVER;
     }
 
     @Override
-    public String getToken(OAuthLoginParam param) {
-        String url = KAKAO_AUTH_URI + "/oauth/token";
+    public String getToken(SocialLoginParam param) {
+        String url = NAVER_AUTH_URI + "/oauth2.0/token";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = param.makeBody();
         body.add("grant_type", GRANT_TYPE);
-        body.add("client_id", CLIENT_ID);
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
         body.add("redirect_uri", REDIRECT_URI);
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
-        KakaoTokenResponse response =
-                restTemplate.postForObject(url, request, KakaoTokenResponse.class);
+
+        NaverTokenResponse response =
+                restTemplate.postForObject(url, request, NaverTokenResponse.class);
 
         assert response != null;
         return response.getAccessToken();
     }
 
-    public KakaoUserInfoResponse getUserInfo(String accessToken) {
-        String url = KAKAO_API_URI + "/v2/user/me";
+    @Override
+    public NaverUserInfoResponse getUserInfo(String accessToken) {
+        String url = NAVER_API_URI + "/v1/nid/me";
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         httpHeaders.set("Authorization", "Bearer " + accessToken);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("property_keys", "[\"kakao_account.email\", \"kakao_account.profile\"]");
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
 
-        return restTemplate.postForObject(url, request, KakaoUserInfoResponse.class);
+        return restTemplate.postForObject(url, request, NaverUserInfoResponse.class);
     }
 }

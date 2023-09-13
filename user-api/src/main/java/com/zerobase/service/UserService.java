@@ -69,6 +69,7 @@ public class UserService {
             throw new CustomException(ErrorCode.BLOCKED_USER);
         }
 
+        log.info("로그인 성공");
         return provider.createToken(user.getEmail(), user.getId(), false);
     }
 
@@ -81,10 +82,15 @@ public class UserService {
                 .findFirst()
                 .orElseThrow(() -> new CustomException(WRONG_ID_OR_PASSWORD));
 
+        log.info("로그인 성공");
         return provider.createToken(user.getEmail(), user.getId(), true);
     }
 
-    public void blockUser(String email) {
+    public void blockUser(User admin, String email) {
+        if (!admin.isAdminYn()) {
+            throw new CustomException(ErrorCode.NO_ADMIN_USER);
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(NO_EXIST_USER));
 
@@ -92,7 +98,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(User admin) {
+        if (!admin.isAdminYn()) {
+            throw new CustomException(ErrorCode.NO_ADMIN_USER);
+        }
+
         return userRepository.findAll();
     }
 

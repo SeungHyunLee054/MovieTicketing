@@ -1,4 +1,4 @@
-package com.zerobase.Oauth.domain.response;
+package com.zerobase.social.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

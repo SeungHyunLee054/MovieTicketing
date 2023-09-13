@@ -1,10 +1,10 @@
-package com.zerobase.Oauth.domain.response;
+package com.zerobase.social.domain.response;
 
 import com.zerobase.domain.type.OAuthProvider;
 
 import java.time.LocalDate;
 
-public interface OAuthUserInfoResponse {
+public interface SocialUserInfoResponse {
     String getEmail();
 
     String getName();

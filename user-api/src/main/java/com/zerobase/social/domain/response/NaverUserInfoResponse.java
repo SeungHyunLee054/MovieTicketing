@@ -1,4 +1,4 @@
-package com.zerobase.Oauth.domain.response;
+package com.zerobase.social.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zerobase.domain.type.OAuthProvider;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-public class NaverUserInfoResponse implements OAuthUserInfoResponse {
+public class NaverUserInfoResponse implements SocialUserInfoResponse {
     @JsonProperty("response")
     private Response response;
 

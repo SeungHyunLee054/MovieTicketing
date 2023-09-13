@@ -22,12 +22,12 @@ public class UserFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         String token = req.getHeader("X-AUTH-TOKEN");
         if (!provider.validateToken(token)) {
-            throw new ServletException();
+            throw new ServletException("Invalid Access");
         }
 
         UserVo vo = provider.getUserVo(token);
         userService.findByIdAndEmail(vo.getId(), vo.getEmail())
-                .orElseThrow(ServletException::new);
+                .orElseThrow(() -> new ServletException("Invalid Access"));
         chain.doFilter(request, response);
     }
 }

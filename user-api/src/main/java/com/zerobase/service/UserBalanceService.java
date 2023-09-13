@@ -24,11 +24,12 @@ public class UserBalanceService {
     public UserBalanceHistory changeBalance(Long userId, ChangeBalanceForm form) {
         UserBalanceHistory userBalanceHistory =
                 userBalanceHistoryRepository.findFirstByUser_IdOrderByIdDesc(userId)
-                        .orElse(UserBalanceHistory.builder()
+                        .orElseGet(() -> UserBalanceHistory.builder()
                                 .changeMoney(0L)
                                 .currentMoney(0L)
                                 .user(userRepository.findById(userId)
-                                        .orElseThrow(() -> new CustomException(NO_EXIST_USER)))
+                                        .orElseThrow(() ->
+                                                new CustomException(NO_EXIST_USER)))
                                 .build());
 
         if (userBalanceHistory.getCurrentMoney() + form.getMoney() < 0) {
@@ -46,6 +47,8 @@ public class UserBalanceService {
         userBalanceHistory.getUser()
                 .setBalance(userBalanceHistory.getCurrentMoney());
 
+        log.info("잔액 변경, 변경 금액 : {}, 변경 후 금액 : {}",
+                userBalanceHistory.getChangeMoney(), userBalanceHistory.getCurrentMoney());
         return userBalanceHistoryRepository.save(userBalanceHistory);
     }
 }
