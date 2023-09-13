@@ -34,4 +34,9 @@ public class MovieController {
         movieService.deletePastOpenMovies();
         return ResponseEntity.ok("상영 종료 영화 데이터 삭제 성공");
     }
+
+    @PostMapping
+    public ResponseEntity<?> search(String txt) {
+        return ResponseEntity.ok(movieService.searchMovie(txt));
+    }
 }

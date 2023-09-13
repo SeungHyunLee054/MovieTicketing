@@ -2,7 +2,9 @@ package com.zerobase.service;
 
 import com.zerobase.client.RedisClient;
 import com.zerobase.domain.model.Movie;
+import com.zerobase.domain.model.MovieElastic;
 import com.zerobase.domain.model.OpenMovie;
+import com.zerobase.domain.repository.ElasticsearchRepository;
 import com.zerobase.domain.repository.MovieRepository;
 import com.zerobase.domain.repository.OpenMovieRepository;
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
@@ -22,6 +24,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final RedisClient redisClient;
     private final OpenMovieRepository openMovieRepository;
+    private final ElasticsearchRepository elasticsearchRepository;
 
     public void saveMovies() {
         int totalPage = kobisOpenAPIService.totalCnt();
@@ -119,5 +122,9 @@ public class MovieService {
         openMovieRepository.deleteAllByOpenDtBefore(LocalDate.now()
                 .minusMonths(1));
         log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
+    }
+
+    public List<MovieElastic> searchMovie(String searchText){
+        return elasticsearchRepository.searchByMovieNameContains(searchText);
     }
 }

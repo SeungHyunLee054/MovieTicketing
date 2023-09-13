@@ -4,17 +4,21 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.*;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Mapping;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 import java.time.LocalDate;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Document(indexName = "movie")
-public class Movie extends BaseEntity {
+@Document(indexName = "movie")
+@Entity
+//@Mapping(mappingPath = "/elasticsearch/movie-mapping.json")
+//@Setting(settingPath = "/elasticsearch/analyzer-setting.json")
+public class MovieElastic extends BaseEntity {
     @Column(unique = true)
     private String movieCd;
     private String movieName;
@@ -28,7 +32,7 @@ public class Movie extends BaseEntity {
     private String directorName;
     private String companyName;
 
-    public static OpenMovie from(Movie movie) {
+    public static OpenMovie from(MovieElastic movie) {
         return OpenMovie.builder()
                 .movieCd(movie.getMovieCd())
                 .movieName(movie.getMovieName())
