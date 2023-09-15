@@ -25,9 +25,12 @@ public class KakaoApi implements SocialApi {
     private String KAKAO_API_URI;
     @Value("${kakao.redirect.uri}")
     private String REDIRECT_URI;
+    private final String REDIRECT_URI_KEY = "redirect_uri";
     @Value("${grant.type}")
     private String GRANT_TYPE;
+    private final String GRANT_TYPE_KEY = "grant_type";
     private final String CLIENT_ID = System.getProperty("kakao_client_id");
+    private final String CLIENT_ID_KEY = "client_id";
 
     public OAuthProvider oAuthProvider() {
         return OAuthProvider.KAKAO;
@@ -41,9 +44,9 @@ public class KakaoApi implements SocialApi {
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = param.makeBody();
-        body.add("grant_type", GRANT_TYPE);
-        body.add("client_id", CLIENT_ID);
-        body.add("redirect_uri", REDIRECT_URI);
+        body.add(GRANT_TYPE_KEY, GRANT_TYPE);
+        body.add(CLIENT_ID_KEY, CLIENT_ID);
+        body.add(REDIRECT_URI_KEY, REDIRECT_URI);
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
         KakaoTokenResponse response =
