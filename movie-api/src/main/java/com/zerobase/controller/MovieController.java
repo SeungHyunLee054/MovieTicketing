@@ -1,10 +1,15 @@
 package com.zerobase.controller;
 
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
+import com.zerobase.elasticsearch.MovieResponse;
 import com.zerobase.service.MovieService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,8 +40,12 @@ public class MovieController {
         return ResponseEntity.ok("상영 종료 영화 데이터 삭제 성공");
     }
 
-    @PostMapping
-    public ResponseEntity<?> search(String txt) {
-        return ResponseEntity.ok(movieService.searchMovie(txt));
+    @GetMapping("/search/{name}")
+    public ResponseEntity<List<MovieResponse>> search(@PathVariable String name, Pageable pageable) {
+        List<MovieResponse> userResponses = movieService.searchMovieByName(name, pageable)
+                .stream()
+                .map(MovieResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userResponses);
     }
 }

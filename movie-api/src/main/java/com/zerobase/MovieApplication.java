@@ -1,7 +1,6 @@
 package com.zerobase;
 
-import com.zerobase.domain.repository.ElasticsearchRepository;
-import com.zerobase.domain.repository.MovieRepository;
+import com.zerobase.domain.repository.MovieSearchRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @EnableJpaRepositories(excludeFilters = @ComponentScan.Filter(
         type = FilterType.ASSIGNABLE_TYPE,
-        classes = ElasticsearchRepository.class
+        classes = MovieSearchRepository.class
 ))
 @SpringBootApplication
 public class MovieApplication {

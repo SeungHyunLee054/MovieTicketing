@@ -2,19 +2,21 @@ package com.zerobase.service;
 
 import com.zerobase.client.RedisClient;
 import com.zerobase.domain.model.Movie;
-import com.zerobase.domain.model.MovieElastic;
 import com.zerobase.domain.model.OpenMovie;
-import com.zerobase.domain.repository.ElasticsearchRepository;
+import com.zerobase.domain.repository.MovieSearchRepository;
 import com.zerobase.domain.repository.MovieRepository;
 import com.zerobase.domain.repository.OpenMovieRepository;
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
+import com.zerobase.elasticsearch.MovieResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final RedisClient redisClient;
     private final OpenMovieRepository openMovieRepository;
-    private final ElasticsearchRepository elasticsearchRepository;
+    private final MovieSearchRepository movieSearchRepository;
 
     public void saveMovies() {
         int totalPage = kobisOpenAPIService.totalCnt();
@@ -35,9 +37,10 @@ public class MovieService {
                     kobisOpenAPIService.getMovieList(curPage);
 
             try {
-                movieRepository.saveAll(movies);
+//                movieRepository.saveAll(movies);
+                movieSearchRepository.saveAll(movies);
             } catch (Exception e) {
-                log.info("중복 키 존재, 해당 값 제외 후 저장");
+                log.info("중복 키 존재, 해당 값 수정");
                 for (Movie m : movies) {
                     Movie movie = movieRepository.findByMovieCd(m.getMovieCd())
                             .orElse(m);
@@ -51,7 +54,8 @@ public class MovieService {
                     movie.setDirectorName(m.getDirectorName());
                     movie.setCompanyName(m.getCompanyName());
 
-                    movieRepository.save(movie);
+//                    movieRepository.save(movie);
+                    movieSearchRepository.save(movie);
                 }
             }
         }
@@ -124,7 +128,10 @@ public class MovieService {
         log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
     }
 
-    public List<MovieElastic> searchMovie(String searchText){
-        return elasticsearchRepository.searchByMovieNameContains(searchText);
+    public List<MovieResponseDto> searchMovieByName(String name, Pageable pageable) {
+        return movieSearchRepository.searchByMovieName(name, pageable)
+                .stream()
+                .map(MovieResponseDto::from)
+                .collect(Collectors.toList());
     }
 }

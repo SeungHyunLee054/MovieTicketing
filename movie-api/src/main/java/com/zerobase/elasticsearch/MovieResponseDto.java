@@ -1,25 +1,19 @@
-package com.zerobase.domain.model;
+package com.zerobase.elasticsearch;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import lombok.*;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Mapping;
-import org.springframework.data.elasticsearch.annotations.Setting;
+import com.zerobase.domain.model.Movie;
+import com.zerobase.domain.model.OpenMovie;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
-@Document(indexName = "movie")
-@Entity
-//@Mapping(mappingPath = "/elasticsearch/movie-mapping.json")
-//@Setting(settingPath = "/elasticsearch/analyzer-setting.json")
-public class MovieElastic extends BaseEntity {
-    @Column(unique = true)
+public class MovieResponseDto {
     private String movieCd;
     private String movieName;
     private String movieNameEn;
@@ -32,8 +26,8 @@ public class MovieElastic extends BaseEntity {
     private String directorName;
     private String companyName;
 
-    public static OpenMovie from(MovieElastic movie) {
-        return OpenMovie.builder()
+    public static MovieResponseDto from(Movie movie){
+        return MovieResponseDto.builder()
                 .movieCd(movie.getMovieCd())
                 .movieName(movie.getMovieName())
                 .movieNameEn(movie.getMovieNameEn())
@@ -46,5 +40,6 @@ public class MovieElastic extends BaseEntity {
                 .directorName(movie.getDirectorName())
                 .companyName(movie.getCompanyName())
                 .build();
+
     }
 }

@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Document(indexName = "movie")
+@Document(indexName = "movies")
 public class Movie extends BaseEntity {
     @Column(unique = true)
     private String movieCd;
