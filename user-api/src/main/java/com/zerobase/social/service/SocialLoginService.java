@@ -6,10 +6,12 @@ import com.zerobase.domain.repository.UserRepository;
 import com.zerobase.social.domain.SocialLoginParam;
 import com.zerobase.social.domain.response.SocialUserInfoResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SocialLoginService {
     private final UserRepository userRepository;
     private final SocialInfoService socialInfoService;
@@ -20,6 +22,7 @@ public class SocialLoginService {
                 socialInfoService.requestUserInfo(param);
         Long userId = findOrCreateUser(userInfoResponse);
 
+        log.info("로그인 성공");
         return tokenProvider.createToken(userInfoResponse.getEmail(), userId, false);
     }
 
@@ -37,8 +40,10 @@ public class SocialLoginService {
                 .phone(userInfoResponse.getPhone())
                 .oAuthProvider(userInfoResponse.getOAuthProvider())
                 .adminYn(false)
+                .balance(0L)
                 .build();
 
+        log.info("회원 가입 성공");
         return userRepository.save(user).getId();
     }
 }

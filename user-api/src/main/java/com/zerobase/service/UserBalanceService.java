@@ -1,6 +1,7 @@
 package com.zerobase.service;
 
 import com.zerobase.domain.ChangeBalanceForm;
+import com.zerobase.domain.model.User;
 import com.zerobase.domain.model.UserBalanceHistory;
 import com.zerobase.domain.repository.UserBalanceHistoryRepository;
 import com.zerobase.domain.repository.UserRepository;
@@ -22,14 +23,14 @@ public class UserBalanceService {
 
     @Transactional(noRollbackFor = CustomException.class)
     public UserBalanceHistory changeBalance(Long userId, ChangeBalanceForm form) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NO_EXIST_USER));
         UserBalanceHistory userBalanceHistory =
                 userBalanceHistoryRepository.findFirstByUser_IdOrderByIdDesc(userId)
                         .orElseGet(() -> UserBalanceHistory.builder()
                                 .changeMoney(0L)
                                 .currentMoney(0L)
-                                .user(userRepository.findById(userId)
-                                        .orElseThrow(() ->
-                                                new CustomException(NO_EXIST_USER)))
+                                .user(user)
                                 .build());
 
         if (userBalanceHistory.getCurrentMoney() + form.getMoney() < 0) {
@@ -47,7 +48,7 @@ public class UserBalanceService {
         userBalanceHistory.getUser()
                 .setBalance(userBalanceHistory.getCurrentMoney());
 
-        log.info("잔액 변경, 변경 금액 : {}, 변경 후 금액 : {}",
+        log.info("잔액 변경 -> 변경 금액 : {}, 변경 후 금액 : {}",
                 userBalanceHistory.getChangeMoney(), userBalanceHistory.getCurrentMoney());
         return userBalanceHistoryRepository.save(userBalanceHistory);
     }

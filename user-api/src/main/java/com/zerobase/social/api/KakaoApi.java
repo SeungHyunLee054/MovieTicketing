@@ -1,5 +1,8 @@
 package com.zerobase.social.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zerobase.social.domain.RequestBodyKakao;
 import com.zerobase.social.domain.SocialLoginParam;
 import com.zerobase.social.domain.response.KakaoTokenResponse;
 import com.zerobase.social.domain.response.KakaoUserInfoResponse;
@@ -14,6 +17,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Map;
+
 
 @Component
 @RequiredArgsConstructor
@@ -25,12 +30,9 @@ public class KakaoApi implements SocialApi {
     private String KAKAO_API_URI;
     @Value("${kakao.redirect.uri}")
     private String REDIRECT_URI;
-    private final String REDIRECT_URI_KEY = "redirect_uri";
     @Value("${grant.type}")
     private String GRANT_TYPE;
-    private final String GRANT_TYPE_KEY = "grant_type";
     private final String CLIENT_ID = System.getProperty("kakao_client_id");
-    private final String CLIENT_ID_KEY = "client_id";
 
     public OAuthProvider oAuthProvider() {
         return OAuthProvider.KAKAO;
@@ -44,10 +46,10 @@ public class KakaoApi implements SocialApi {
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = param.makeBody();
-        body.add(GRANT_TYPE_KEY, GRANT_TYPE);
-        body.add(CLIENT_ID_KEY, CLIENT_ID);
-        body.add(REDIRECT_URI_KEY, REDIRECT_URI);
-
+        body.setAll(new ObjectMapper().convertValue(
+                new RequestBodyKakao(GRANT_TYPE, CLIENT_ID, REDIRECT_URI),
+                new TypeReference<>() {
+                }));
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
         KakaoTokenResponse response =
                 restTemplate.postForObject(url, request, KakaoTokenResponse.class);

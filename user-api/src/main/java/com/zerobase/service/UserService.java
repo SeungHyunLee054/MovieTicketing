@@ -1,8 +1,11 @@
 package com.zerobase.service;
 
+import com.zerobase.common.UserVo;
 import com.zerobase.config.TokenProvider;
 import com.zerobase.domain.SignInForm;
 import com.zerobase.domain.SignUpForm;
+import com.zerobase.domain.UserDto;
+import com.zerobase.domain.model.BlockInputForm;
 import com.zerobase.domain.model.User;
 import com.zerobase.domain.repository.UserRepository;
 import com.zerobase.domain.type.OAuthProvider;
@@ -32,7 +35,6 @@ public class UserService {
         }
 
         User user = User.from(form);
-        user.setBlocked(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setOAuthProvider(OAuthProvider.DOMAIN);
         user.setBalance(0L);
@@ -41,27 +43,11 @@ public class UserService {
         log.info("회원 가입 성공");
     }
 
-    public void userAdminSignUp(SignUpForm form) {
-        if (userRepository.findByEmail(form.getEmail()).isPresent()) {
-            throw new CustomException(ALREADY_EXIST_USER);
-        }
-
-        User user = User.from(form);
-        user.setAdminYn(true);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setOAuthProvider(OAuthProvider.DOMAIN);
-        user.setBalance(0L);
-
-        userRepository.save(user);
-        log.info("회원 가입 성공");
-    }
-
-    public String userLoginToken(SignInForm form) {
+    public String userLogin(SignInForm form) {
         User user = userRepository.findByEmail(form.getEmail())
                 .stream()
                 .filter(u ->
-                        passwordEncoder.matches(form.getPassword(), u.getPassword())
-                                && !u.isAdminYn())
+                        passwordEncoder.matches(form.getPassword(), u.getPassword()))
                 .findFirst()
                 .orElseThrow(() -> new CustomException(WRONG_ID_OR_PASSWORD));
 
@@ -70,38 +56,30 @@ public class UserService {
         }
 
         log.info("로그인 성공");
-        return provider.createToken(user.getEmail(), user.getId(), false);
+        return provider.createToken(user.getEmail(), user.getId(), user.isAdminYn());
     }
 
-    public String userAdminLoginToken(SignInForm form) {
-        User user = userRepository.findByEmail(form.getEmail())
-                .stream()
-                .filter(u ->
-                        passwordEncoder.matches(form.getPassword(), u.getPassword())
-                                && u.isAdminYn())
-                .findFirst()
-                .orElseThrow(() -> new CustomException(WRONG_ID_OR_PASSWORD));
-
-        log.info("로그인 성공");
-        return provider.createToken(user.getEmail(), user.getId(), true);
+    public UserDto getUserInfo(String email) {
+        return UserDto.from(findByEmail(email));
     }
 
-    public void blockUser(User admin, String email) {
-        if (!admin.isAdminYn()) {
+    public void blockUser(UserVo userVo, BlockInputForm form) {
+        if (!userVo.isAdminYn()) {
             throw new CustomException(ErrorCode.NO_ADMIN_USER);
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(NO_EXIST_USER));
+        User user = findByEmail(form.getEmail());
 
         user.setBlocked(true);
         userRepository.save(user);
+        log.info("차단된 유저 -> email : {}", user.getEmail());
     }
 
-    public List<User> getAllUsers(User admin) {
-        if (!admin.isAdminYn()) {
+    public List<User> getAllUsers(UserVo userVo) {
+        if (!userVo.isAdminYn()) {
             throw new CustomException(ErrorCode.NO_ADMIN_USER);
         }
+        log.info("모든 유저 조회");
 
         return userRepository.findAll();
     }

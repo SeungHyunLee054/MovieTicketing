@@ -45,6 +45,8 @@ public class User extends BaseEntity{
                 .password(form.getPassword())
                 .birth(form.getBirth())
                 .phone(form.getPhone())
+                .blocked(false)
+                .adminYn(form.isAdminYn())
                 .build();
     }
 }

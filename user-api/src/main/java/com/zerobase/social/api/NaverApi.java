@@ -1,9 +1,12 @@
 package com.zerobase.social.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zerobase.domain.type.OAuthProvider;
+import com.zerobase.social.domain.RequestBodyNaver;
 import com.zerobase.social.domain.SocialLoginParam;
 import com.zerobase.social.domain.response.NaverTokenResponse;
 import com.zerobase.social.domain.response.NaverUserInfoResponse;
-import com.zerobase.domain.type.OAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -26,10 +29,8 @@ public class NaverApi implements SocialApi {
     private String REDIRECT_URI;
     @Value("${grant.type}")
     private String GRANT_TYPE;
-
-    private final String clientId = System.getProperty("naver_client_id");
-
-    private final String clientSecret = System.getProperty("naver_client_secret");
+    private final String CLIENT_ID = System.getProperty("naver_client_id");
+    private final String CLIENT_SECRET = System.getProperty("naver_client_secret");
 
     @Override
     public OAuthProvider oAuthProvider() {
@@ -44,10 +45,10 @@ public class NaverApi implements SocialApi {
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = param.makeBody();
-        body.add("grant_type", GRANT_TYPE);
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("redirect_uri", REDIRECT_URI);
+        body.setAll(new ObjectMapper().convertValue(
+                new RequestBodyNaver(GRANT_TYPE, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI),
+                new TypeReference<>() {
+                }));
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
 
@@ -66,9 +67,7 @@ public class NaverApi implements SocialApi {
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         httpHeaders.set("Authorization", "Bearer " + accessToken);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-
-        HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
+        HttpEntity<?> request = new HttpEntity<>(httpHeaders);
 
         return restTemplate.postForObject(url, request, NaverUserInfoResponse.class);
     }
