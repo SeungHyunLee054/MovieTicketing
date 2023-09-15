@@ -2,11 +2,11 @@ package com.zerobase.social.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zerobase.domain.type.OAuthProvider;
 import com.zerobase.social.domain.RequestBodyKakao;
 import com.zerobase.social.domain.SocialLoginParam;
 import com.zerobase.social.domain.response.KakaoTokenResponse;
 import com.zerobase.social.domain.response.KakaoUserInfoResponse;
-import com.zerobase.domain.type.OAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 
 @Component

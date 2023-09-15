@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.zerobase.exception.ErrorCode.*;
 
@@ -87,12 +86,5 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(NO_EXIST_USER));
-    }
-
-    public Optional<User> findByIdAndEmail(Long id, String email) {
-        return userRepository.findById(id)
-                .stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
     }
 }
