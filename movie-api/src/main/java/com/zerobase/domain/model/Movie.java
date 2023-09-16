@@ -3,7 +3,6 @@ package com.zerobase.domain.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.*;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.LocalDate;
 
@@ -13,7 +12,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(indexName = "movies")
 public class Movie extends BaseEntity {
     @Column(unique = true)
     private String movieCd;

@@ -1,16 +1,19 @@
 package com.zerobase.service;
 
 import com.zerobase.client.RedisClient;
+import com.zerobase.domain.response.movie.search.MovieSearchResponse;
 import com.zerobase.domain.model.Movie;
+import com.zerobase.domain.model.MovieElastic;
 import com.zerobase.domain.model.OpenMovie;
-import com.zerobase.domain.repository.MovieSearchRepository;
 import com.zerobase.domain.repository.MovieRepository;
+import com.zerobase.domain.repository.MovieSearchRepository;
 import com.zerobase.domain.repository.OpenMovieRepository;
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
-import com.zerobase.elasticsearch.MovieResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -36,9 +39,9 @@ public class MovieService {
             List<Movie> movies =
                     kobisOpenAPIService.getMovieList(curPage);
 
+
             try {
-//                movieRepository.saveAll(movies);
-                movieSearchRepository.saveAll(movies);
+                movieRepository.saveAll(movies);
             } catch (Exception e) {
                 log.info("중복 키 존재, 해당 값 수정");
                 for (Movie m : movies) {
@@ -54,8 +57,7 @@ public class MovieService {
                     movie.setDirectorName(m.getDirectorName());
                     movie.setCompanyName(m.getCompanyName());
 
-//                    movieRepository.save(movie);
-                    movieSearchRepository.save(movie);
+                    movieRepository.save(movie);
                 }
             }
         }
@@ -128,10 +130,25 @@ public class MovieService {
         log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
     }
 
-    public List<MovieResponseDto> searchMovieByName(String name, Pageable pageable) {
-        return movieSearchRepository.searchByMovieName(name, pageable)
-                .stream()
-                .map(MovieResponseDto::from)
+    public void movieToElastic() {
+        List<Movie> movieList = movieRepository.findAll();
+        List<MovieElastic> movieElastics = movieList.stream()
+                .map(m -> MovieElastic.builder()
+                        .id(m.getId())
+                        .movieCd(m.getMovieCd())
+                        .movieName(m.getMovieName())
+                        .movieNameEn(m.getMovieNameEn())
+                        .build())
                 .collect(Collectors.toList());
+        movieSearchRepository.saveAll(movieElastics);
+        log.info("db의 데이터 elasticsearch에 저장 성공");
+    }
+
+    public MovieSearchResponse searchMovieByName(String name, int size, int idx) {
+        Pageable pageable = PageRequest.of(idx, size);
+        Page<MovieElastic> movieElasticPage = movieSearchRepository.findByMovieName(name, pageable);
+        log.info("총 {}개의 데이터 검색", movieElasticPage.getSize());
+
+        return new MovieSearchResponse(movieElasticPage.getContent());
     }
 }

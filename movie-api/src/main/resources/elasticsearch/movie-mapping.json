@@ -1,0 +1,8 @@
+{
+  "properties" : {
+    "id" : {"type" : "keyword"},
+    "movieCd" : {"type" : "keyword"},
+    "movieName" : {"type" : "text", "fields": {"kor":  {"type":  "text", "analyzer": "korean"}}},
+    "movieNameEn" : {"type" : "text"}
+  }
+}

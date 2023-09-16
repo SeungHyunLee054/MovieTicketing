@@ -1,15 +1,11 @@
 package com.zerobase.controller;
 
+import com.zerobase.domain.response.movie.search.MovieSearchResponse;
 import com.zerobase.domain.response.movie.detail.MovieDetailDto;
-import com.zerobase.elasticsearch.MovieResponse;
 import com.zerobase.service.MovieService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,12 +36,16 @@ public class MovieController {
         return ResponseEntity.ok("상영 종료 영화 데이터 삭제 성공");
     }
 
-    @GetMapping("/search/{name}")
-    public ResponseEntity<List<MovieResponse>> search(@PathVariable String name, Pageable pageable) {
-        List<MovieResponse> userResponses = movieService.searchMovieByName(name, pageable)
-                .stream()
-                .map(MovieResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(userResponses);
+    @GetMapping("/search/{size}/{idx}")
+    public ResponseEntity<MovieSearchResponse> search(@RequestParam String name,
+                                                      @PathVariable int size,
+                                                      @PathVariable int idx) {
+        return ResponseEntity.ok(movieService.searchMovieByName(name, size, idx));
+    }
+
+    @PostMapping("/elastic")
+    public ResponseEntity<String> saveElasticSearch() {
+        movieService.movieToElastic();
+        return ResponseEntity.ok("elasticsearch 저장 성공");
     }
 }
