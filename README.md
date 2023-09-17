@@ -29,3 +29,6 @@
 2. 영화 정보를 월마다 batch를 이용해서 자동으로 가져오기
 3. 영화의 상세정보는 영화진흥위원회의 open api를 통해서 movieCd를 통해 가져오기
 4. 상영중인 영화의 상세정보는 redis서버에 저장
+
+## ERD
+![movie_ticketing](https://github.com/SeungHyunLee054/MovieTicketing/assets/103303970/6ab0e30a-b957-48ff-975a-6115fd7e3138)
