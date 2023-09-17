@@ -7,15 +7,14 @@
 1. MySql
 2. h2database
 ### plugins
-1. Spring boot
-2. Spring batch
-3. Spring quartz
-4. jdbc
-5. jpa
-6. redis
-7. Lombok
-8. elastic search
-9. swagger
+1. Spring
+2. Spring quartz
+3. jdbc
+4. jpa
+5. redis
+6. Lombok
+7. elastic search
+8. swagger
 
 ## 제공하는 기능(API)
 ### 유저관련 기능
