@@ -2,10 +2,8 @@ package com.zerobase.service;
 
 import com.zerobase.common.UserVo;
 import com.zerobase.config.TokenProvider;
-import com.zerobase.domain.SignInForm;
-import com.zerobase.domain.SignUpForm;
-import com.zerobase.domain.UserDto;
-import com.zerobase.domain.model.BlockInputForm;
+import com.zerobase.domain.*;
+import com.zerobase.domain.BlockInputForm;
 import com.zerobase.domain.model.User;
 import com.zerobase.domain.repository.UserRepository;
 import com.zerobase.domain.type.OAuthProvider;
@@ -27,6 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final TokenProvider provider;
     private final PasswordEncoder passwordEncoder;
+    private final UserBalanceService userBalanceService;
 
     public void userSignUp(SignUpForm form) {
         if (userRepository.findByEmail(form.getEmail()).isPresent()) {
@@ -86,5 +85,22 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(NO_EXIST_USER));
+    }
+
+    public User bookingMovie(Long userId, MovieInputForm form) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NO_EXIST_USER));
+
+        user.getMovies().add(MovieDto.from(form));
+        userBalanceService.changeBalance(userId,
+                ChangeBalanceForm.builder()
+                        .from("사이트")
+                        .message("영화 예매")
+                        .money(form.getSeats() * -8000L)
+                        .build());
+        userRepository.save(user);
+        log.info("영화 예매 성공, 영화 이름 -> {}", form.getMovieName());
+
+        return user;
     }
 }

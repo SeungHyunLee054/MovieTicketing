@@ -1,11 +1,8 @@
 package com.zerobase.controller;
 
 import com.zerobase.common.UserVo;
-import com.zerobase.domain.ChangeBalanceForm;
-import com.zerobase.domain.SignInForm;
-import com.zerobase.domain.SignUpForm;
-import com.zerobase.domain.UserDto;
-import com.zerobase.domain.model.BlockInputForm;
+import com.zerobase.domain.*;
+import com.zerobase.domain.BlockInputForm;
 import com.zerobase.domain.model.User;
 import com.zerobase.service.UserBalanceService;
 import com.zerobase.service.UserService;
@@ -35,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<UserDto> userInfo(@AuthenticationPrincipal UserVo userVo) {
+    public ResponseEntity<UserDto> getUserInfo(@AuthenticationPrincipal UserVo userVo) {
         return ResponseEntity.ok(userService.getUserInfo(userVo.getEmail()));
     }
 
@@ -56,5 +53,11 @@ public class UserController {
                                               @RequestBody ChangeBalanceForm form) {
         return ResponseEntity.ok(userBalanceService
                 .changeBalance(userVo.getId(), form).getCurrentMoney());
+    }
+
+    @PostMapping("/booking")
+    public ResponseEntity<User> bookingMovie(@AuthenticationPrincipal UserVo userVo,
+                                             @RequestBody MovieInputForm form) {
+        return ResponseEntity.ok(userService.bookingMovie(userVo.getId(), form));
     }
 }

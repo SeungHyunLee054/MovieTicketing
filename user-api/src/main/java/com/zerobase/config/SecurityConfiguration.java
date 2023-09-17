@@ -15,10 +15,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class SecurityConfig {
+public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(TokenProvider provider) {
+    public SecurityConfiguration(TokenProvider provider) {
         this.jwtAuthenticationFilter = new JwtAuthenticationFilter(provider);
     }
 
