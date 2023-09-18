@@ -1,4 +1,4 @@
-package com.zerobase.domain.model;
+package com.zerobase.domain;
 
 import lombok.Getter;
 

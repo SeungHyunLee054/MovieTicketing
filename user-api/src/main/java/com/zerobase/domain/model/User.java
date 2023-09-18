@@ -1,5 +1,7 @@
 package com.zerobase.domain.model;
 
+import com.zerobase.domain.MovieDto;
+import com.zerobase.domain.MovieInputForm;
 import com.zerobase.domain.SignUpForm;
 import com.zerobase.domain.type.OAuthProvider;
 import jakarta.persistence.*;
@@ -18,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @AuditOverride(forClass = BaseEntity.class)
-public class User extends BaseEntity{
+public class User extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String email;
     private String name;
@@ -28,8 +30,9 @@ public class User extends BaseEntity{
 
     private boolean adminYn;
 
-    @ManyToMany
-    private List<Movie> movies = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "movie")
+    private List<MovieDto> movies = new ArrayList<>();
 
     @ColumnDefault("0")
     private Long balance;

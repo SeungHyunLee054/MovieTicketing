@@ -26,9 +26,7 @@ public class UserDto {
                 .balance(user.getBalance())
                 .birth(user.getBirth())
                 .phone(user.getPhone())
-                .movies(user.getMovies().stream()
-                        .map(MovieDto::from)
-                        .toList())
+                .movies(user.getMovies())
                 .build();
     }
 }
