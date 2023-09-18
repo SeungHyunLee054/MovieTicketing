@@ -13,8 +13,6 @@ import java.util.Optional;
 public interface OpenMovieRepository extends JpaRepository<OpenMovie, Long> {
     Optional<OpenMovie> findByMovieCd(String movieCd);
 
-    void deleteAllByOpenDtBefore(LocalDate date);
-
     @Transactional
     List<OpenMovie> findAllByOpenDtBefore(LocalDate date);
 }

@@ -125,8 +125,7 @@ public class MovieService {
                 log.info("redis 서버에 해당 영화의 상세정보가 존재하므로 삭제하였습니다. 해당 영화 제목 -> {}", o.getMovieName());
             }
         }
-        openMovieRepository.deleteAllByOpenDtBefore(LocalDate.now()
-                .minusMonths(1));
+        openMovieRepository.deleteAll(pastOpenMovies);
         log.info("{}개의 영화가 상영 종료되었으므로 DB에서 삭제되었습니다.", pastOpenMovies.size());
     }
 
