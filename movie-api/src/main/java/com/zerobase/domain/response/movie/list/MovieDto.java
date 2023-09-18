@@ -1,10 +1,7 @@
 package com.zerobase.domain.response.movie.list;
 
 import com.zerobase.domain.model.Movie;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class MovieDto {
     private String movieCd;
     private String movieNm;
